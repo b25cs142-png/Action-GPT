@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ActionGPT — Let AI Get the Work Done</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0b10;
+  --s1:#0f1018;
+  --s2:#161724;
+  --s3:#1e1f2e;
+  --or:#f97316;--or2:#ea6c0a;
+  --cy:#06b6d4;--cy2:#0891b2;
+  --green:#22c55e;--amber:#fbbf24;--red:#f87171;--pink:#f472b6;
+  --t1:#f0f0fa;--t2:#8b8bab;--t3:#3e3e5c;
+  --b1:rgba(249,115,22,.1);--b2:rgba(249,115,22,.22);
+  --b3:rgba(6,182,212,.1);
+  --glow-or:0 0 28px rgba(249,115,22,.2);
+  --glow-cy:0 0 28px rgba(6,182,212,.18);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--t1);height:100vh;display:flex;overflow:hidden;font-size:14px}
+
+/* ── Sidebar ── */
+.sb{width:222px;background:var(--s1);border-right:1px solid rgba(249,115,22,.08);display:flex;flex-direction:column;flex-shrink:0}
+.logo{padding:20px 16px 18px;border-bottom:1px solid rgba(249,115,22,.08);display:flex;align-items:center;gap:12px;cursor:default}
+.logo-mark{width:36px;height:36px;background:linear-gradient(135deg,var(--or),var(--cy));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;box-shadow:0 0 20px rgba(249,115,22,.35)}
+.logo-text{font-weight:700;font-size:16px;letter-spacing:-.3px}
+.logo-text span{color:var(--or)}
+.nav{padding:10px 8px;flex:1;overflow-y:auto}
+.ns{padding:10px 10px 4px;font-size:10px;font-weight:600;color:var(--t3);letter-spacing:.4px;margin-top:4px}
+.ni{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;color:var(--t2);font-size:13.5px;font-weight:500;transition:all .15s;margin-bottom:2px;user-select:none;border:1px solid transparent}
+.ni:hover{background:var(--s2);color:var(--t1)}
+.ni.active{background:rgba(249,115,22,.08);color:var(--or);border-color:rgba(249,115,22,.16)}
+.ni .ic{font-size:15px;width:18px;text-align:center;flex-shrink:0}
+.ni .badge{margin-left:auto;background:var(--or);color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px}
+.recents{padding:8px;border-top:1px solid rgba(249,115,22,.08)}
+.rh{font-size:10px;font-weight:600;color:var(--t3);letter-spacing:.4px;padding:0 5px;margin-bottom:7px}
+.ri{padding:7px 12px;border-radius:7px;cursor:pointer;color:var(--t2);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:all .15s}
+.ri:hover{background:var(--s2);color:var(--t1)}
+
+/* ── Main ── */
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{height:54px;border-bottom:1px solid rgba(249,115,22,.08);display:flex;align-items:center;padding:0 22px;gap:10px;flex-shrink:0;background:var(--s1)}
+.tb-title{font-weight:600;font-size:15px;flex:1}
+.pill{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid}
+.pill-g{background:rgba(34,197,94,.08);color:var(--green);border-color:rgba(34,197,94,.2)}
+.pill-or{background:rgba(249,115,22,.08);color:var(--or);border-color:rgba(249,115,22,.2)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pd 2s infinite;flex-shrink:0}
+@keyframes pd{0%,100%{opacity:1}50%{opacity:.3}}
+.btn{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;white-space:nowrap}
+.btn-p{background:linear-gradient(135deg,var(--or),var(--or2));color:#fff;box-shadow:0 2px 12px rgba(249,115,22,.3)}
+.btn-p:hover{box-shadow:0 4px 20px rgba(249,115,22,.5);transform:translateY(-1px)}
+.btn-g{background:transparent;color:var(--t2);border:1px solid rgba(249,115,22,.18)}
+.btn-g:hover{color:var(--t1);border-color:rgba(249,115,22,.35);background:var(--b1)}
+
+/* ── Chat area ── */
+.chat-wrap{flex:1;overflow-y:auto;padding:28px 24px 12px;scrollbar-width:thin;scrollbar-color:var(--s3) transparent}
+.chat-wrap::-webkit-scrollbar{width:4px}
+.chat-wrap::-webkit-scrollbar-thumb{background:var(--s3);border-radius:2px}
+#chatMsgs{display:flex;flex-direction:column;max-width:780px;margin:0 auto}
+
+.msg{display:flex;gap:10px;margin-bottom:20px;animation:si .22s ease}
+.msg.user{flex-direction:row-reverse}
+@keyframes si{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.av{width:32px;height:32px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px}
+.av.ai{background:linear-gradient(135deg,var(--or),var(--cy))}
+.av.hu{background:linear-gradient(135deg,#6366f1,var(--pink))}
+.bubble{background:var(--s2);border:1px solid rgba(255,255,255,.05);border-radius:14px;padding:12px 16px;line-height:1.72;max-width:580px;font-size:13.5px;color:var(--t1)}
+.msg.user .bubble{background:rgba(249,115,22,.1);border-color:rgba(249,115,22,.22);border-bottom-right-radius:4px}
+.msg.ai .bubble{border-bottom-left-radius:4px}
+.bubble a{color:var(--cy);text-decoration:none}
+.bubble strong{color:var(--t1);font-weight:600}
+.bubble code{font-family:'JetBrains Mono',monospace;background:var(--bg);padding:2px 6px;border-radius:4px;font-size:12px;color:var(--cy)}
+
+/* ── Plan card ── */
+.plan-card{background:var(--s2);border:1px solid var(--b2);border-radius:14px;padding:18px;margin-bottom:18px;animation:si .3s ease;box-shadow:var(--glow-or)}
+.plan-label{font-size:11px;font-weight:600;color:var(--or);letter-spacing:.3px;margin-bottom:16px;display:flex;align-items:center;gap:6px}
+.steps-row{display:flex;align-items:flex-start}
+.step-col{flex:1;text-align:center;position:relative}
+.step-col:not(:last-child)::after{content:'';position:absolute;top:18px;left:50%;width:100%;height:2px;background:linear-gradient(90deg,var(--b2),transparent);z-index:0}
+.sc{width:36px;height:36px;border-radius:50%;border:2px solid var(--b2);display:flex;align-items:center;justify-content:center;margin:0 auto 7px;font-size:13px;position:relative;z-index:1;background:var(--bg);transition:all .35s}
+.sc.active{background:var(--or);border-color:var(--or);color:#fff;box-shadow:0 0 18px rgba(249,115,22,.6);animation:ps 1.4s infinite}
+.sc.done{background:var(--green);border-color:var(--green);color:#fff}
+@keyframes ps{0%,100%{box-shadow:0 0 14px rgba(249,115,22,.4)}50%{box-shadow:0 0 26px rgba(249,115,22,.7)}}
+.sl{font-size:10px;font-weight:500;color:var(--t3);transition:color .3s}
+.sl.active{color:var(--or)}
+.sl.done{color:var(--green)}
+.pbar{height:3px;background:var(--b1);border-radius:2px;margin-top:16px;overflow:hidden}
+.pfill{height:100%;background:linear-gradient(90deg,var(--or),var(--cy));border-radius:2px;transition:width .5s ease}
+
+/* ── Exec cards ── */
+.exec-card{background:var(--s2);border:1px solid rgba(255,255,255,.05);border-radius:11px;padding:11px 15px;margin-bottom:8px;display:flex;align-items:center;gap:11px;animation:si .3s ease}
+.ex-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.ex-info{flex:1}
+.ex-agent{font-size:10px;font-weight:700;letter-spacing:.4px;margin-bottom:2px}
+.ex-action{font-size:12.5px;color:var(--t2)}
+.ex-st{font-size:12px;font-weight:500;display:flex;align-items:center;gap:5px;flex-shrink:0}
+.spin{width:11px;height:11px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:sp .65s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── Output card ── */
+.out-card{background:linear-gradient(135deg,rgba(249,115,22,.06),rgba(6,182,212,.04));border:1px solid rgba(249,115,22,.25);border-radius:14px;padding:18px;margin-bottom:18px;animation:si .4s ease}
+.out-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.out-badge{background:linear-gradient(135deg,var(--or),var(--cy));color:#fff;padding:3px 11px;border-radius:20px;font-size:10.5px;font-weight:600}
+.out-title{font-weight:600;font-size:14.5px}
+.out-body{background:var(--bg);border:1px solid rgba(255,255,255,.06);border-radius:9px;padding:14px;font-size:13px;line-height:1.75;color:var(--t2);margin-bottom:13px;max-height:340px;overflow-y:auto}
+.out-body.open{max-height:none}
+.out-body h5{color:var(--t1);margin-bottom:8px}
+.out-meta{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.05);font-size:11px;color:var(--t3)}
+.out-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+/* ── Typing ── */
+.typing-bubble{background:var(--s2);border:1px solid rgba(255,255,255,.05);border-radius:14px;border-bottom-left-radius:4px;padding:12px 18px;display:flex;gap:5px;align-items:center}
+.tb-dot{width:6px;height:6px;background:var(--t3);border-radius:50%;animation:tb 1.2s infinite}
+.tb-dot:nth-child(2){animation-delay:.2s}
+.tb-dot:nth-child(3){animation-delay:.4s}
+@keyframes tb{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+
+/* ── Suggestions ── */
+.sugg-wrap{padding:4px 24px 10px;max-width:828px;margin:0 auto;width:100%}
+.sugg-row{display:flex;gap:8px}
+.sugg-pill{flex:1;background:var(--s2);border:1px solid rgba(255,255,255,.06);border-radius:11px;padding:10px 14px;cursor:pointer;font-size:12.5px;color:var(--t2);transition:all .15s;line-height:1.55}
+.sugg-pill:hover{border-color:rgba(249,115,22,.3);color:var(--t1);background:var(--s3)}
+.sugg-pill strong{color:var(--or);display:block;font-size:11px;margin-bottom:3px;font-weight:600}
+
+/* ── Input ── */
+.input-area{padding:12px 24px 18px;border-top:1px solid rgba(249,115,22,.08);background:var(--s1);flex-shrink:0}
+.input-row{display:flex;align-items:flex-end;gap:8px;background:var(--s2);border:1px solid rgba(249,115,22,.18);border-radius:14px;padding:10px 12px;max-width:780px;margin:0 auto;transition:all .2s}
+.input-row:focus-within{border-color:rgba(249,115,22,.45);box-shadow:0 0 0 3px rgba(249,115,22,.08)}
+.chat-input{flex:1;background:none;border:none;outline:none;color:var(--t1);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;resize:none;max-height:110px;line-height:1.55}
+.chat-input::placeholder{color:var(--t3)}
+.ib{width:32px;height:32px;border-radius:8px;border:none;background:transparent;color:var(--t3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .15s;flex-shrink:0}
+.ib:hover{background:var(--s3);color:var(--t2)}
+.send-btn{width:32px;height:32px;border-radius:9px;border:none;background:linear-gradient(135deg,var(--or),var(--or2));color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;box-shadow:0 2px 10px rgba(249,115,22,.3)}
+.send-btn:hover{box-shadow:0 4px 18px rgba(249,115,22,.5);transform:translateY(-1px)}
+.send-btn:disabled{background:var(--t3);cursor:default;box-shadow:none;transform:none}
+.input-hint{text-align:center;font-size:11px;color:var(--t3);margin-top:7px;max-width:780px;margin-left:auto;margin-right:auto}
+
+/* ── Welcome ── */
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 24px;gap:16px;text-align:center}
+.wlogo{width:74px;height:74px;background:linear-gradient(135deg,var(--or),var(--cy));border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:6px;box-shadow:0 0 60px rgba(249,115,22,.35)}
+.welcome h2{font-size:30px;font-weight:700;letter-spacing:-.5px;max-width:440px;line-height:1.2}
+.welcome p{color:var(--t2);max-width:400px;line-height:1.72;font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:500px}
+.chip{background:var(--s2);border:1px solid rgba(249,115,22,.12);padding:5px 13px;border-radius:20px;font-size:12px;color:var(--t2)}
+
+/* ── Right panel ── */
+.rp{width:268px;border-left:1px solid rgba(249,115,22,.08);background:var(--s1);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.rp-sec{padding:14px 16px;border-bottom:1px solid rgba(249,115,22,.08)}
+.rp-title{font-size:10.5px;font-weight:600;color:var(--t3);letter-spacing:.4px;margin-bottom:11px}
+.ag-card{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;margin-bottom:4px;border:1px solid rgba(255,255,255,.05);background:var(--s2)}
+.ag-ico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.ag-info{flex:1;min-width:0}
+.ag-name{font-size:12.5px;font-weight:500}
+.ag-state{font-size:10.5px;color:var(--t3)}
+.ag-ind{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ind-idle{background:var(--t3)}
+.ind-work{background:var(--or);animation:pd 1s infinite}
+.ind-done{background:var(--green)}
+.task-label{font-size:12px;color:var(--t3);padding:6px 0;text-align:center}
+.alog{flex:1;overflow-y:auto;padding:14px 16px;scrollbar-width:thin;scrollbar-color:var(--s3) transparent}
+.alog::-webkit-scrollbar{width:3px}
+.alog::-webkit-scrollbar-thumb{background:var(--s3);border-radius:2px}
+.log-e{display:flex;gap:7px;margin-bottom:9px;font-size:11.5px;animation:si .25s ease}
+.log-t{color:var(--t3);flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:10px;padding-top:1px}
+.log-m{color:var(--t2);line-height:1.5}
+.log-m strong{color:var(--t1)}
+.empty-log{color:var(--t3);font-size:12px;text-align:center;padding:16px 0}
+
+/* ── Markdown, toast ── */
+.bubble{max-width:640px;overflow-wrap:anywhere}
+.bubble p{margin:0 0 8px}
+.bubble p:last-child,.bubble ul:last-child,.bubble ol:last-child,.bubble pre:last-child{margin-bottom:0}
+.bubble ul,.bubble ol{margin:0 0 8px 20px}
+.bubble li{margin-bottom:3px}
+.bubble h5{font-size:14px;margin:10px 0 6px;color:var(--t1)}
+.bubble pre,.out-body pre{background:var(--bg);border:1px solid rgba(255,255,255,.06);border-radius:9px;padding:11px 14px;margin:6px 0 10px;overflow-x:auto}
+.bubble pre code,.out-body pre code{background:none;padding:0;color:var(--t1);font-size:12px;line-height:1.6;white-space:pre}
+.out-body{overflow-wrap:anywhere}
+.out-body p{margin:0 0 8px}
+.out-body ul,.out-body ol{margin:0 0 8px 20px}
+.out-body code{font-family:'JetBrains Mono',monospace;background:var(--s2);padding:1px 5px;border-radius:4px;font-size:11.5px;color:var(--cy)}
+.out-body strong{color:var(--t1)}
+.toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--s3);border:1px solid rgba(249,115,22,.2);color:var(--t1);padding:9px 18px;border-radius:10px;font-size:12.5px;opacity:0;pointer-events:none;transition:all .25s;z-index:60}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:1050px){.rp{display:none}}
+@media(max-width:720px){.sb{display:none}.sugg-row{flex-direction:column}.topbar .btn-g{display:none}}
+
+/* ── Loading overlay for AI init ── */
+#aiStatus{position:fixed;bottom:16px;right:16px;background:var(--s2);border:1px solid var(--b2);padding:8px 14px;border-radius:10px;font-size:12px;color:var(--or);display:flex;align-items:center;gap:8px;z-index:99;transition:opacity .4s}
+#aiStatus.hide{opacity:0;pointer-events:none}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sb">
+  <div class="logo">
+    <div class="logo-mark">⚡</div>
+    <div class="logo-text">Action<span>GPT</span></div>
+  </div>
+  <nav class="nav">
+    <div class="ns">Main</div>
+    <div class="ni" onclick="navClick('Dashboard')"><span class="ic">⬡</span>Dashboard</div>
+    <div class="ni active" onclick="navClick('Chat')"><span class="ic">💬</span>AI Chat<span class="badge">Live</span></div>
+    <div class="ni" onclick="navClick('Tasks')"><span class="ic">⊞</span>Tasks</div>
+    <div class="ni" onclick="navClick('Projects')"><span class="ic">◫</span>Projects</div>
+    <div class="ns">Tools</div>
+    <div class="ni" onclick="navClick('Files')"><span class="ic">◻</span>Files</div>
+    <div class="ni" onclick="navClick('Agents')"><span class="ic">◈</span>Agents</div>
+    <div class="ni" onclick="navClick('Activity')"><span class="ic">⊹</span>Activity</div>
+  </nav>
+  <div class="recents">
+    <div class="rh">Recent</div>
+    <div class="ri">🔬 Renewable Energy Slides</div>
+    <div class="ri">📊 Market Analysis Report</div>
+    <div class="ri">💻 React Dashboard Build</div>
+    <div class="ri">📝 Startup Business Plan</div>
+    <div class="ri">🌐 Competitor Research</div>
+  </div>
+</aside>
+
+<!-- MAIN PANEL -->
+<main class="main">
+  <div class="topbar">
+    <div class="tb-title">AI Chat</div>
+    <div class="pill pill-g"><div class="dot"></div>7 Agents Ready</div>
+    <div class="pill pill-or" id="aiPill"><div class="dot"></div>AI Loading…</div>
+    <button class="btn btn-g" onclick="clearChat()">New Chat</button>
+    <button class="btn btn-p" onclick="runDemo()">▶ Run Demo</button>
+  </div>
+
+  <div class="chat-wrap" id="chatWrap">
+    <div id="chatMsgs">
+      <div class="welcome" id="welcomeState">
+        <div class="wlogo">⚡</div>
+        <h2>Don't just ask AI.<br>Let AI get it done.</h2>
+        <p>ActionGPT understands your goal, creates a plan, deploys specialized agents, and delivers the finished result — not instructions on how to do it yourself.</p>
+        <div class="chips">
+          <div class="chip">🔬 Deep Research</div>
+          <div class="chip">📊 Data Analysis</div>
+          <div class="chip">📑 Document Generation</div>
+          <div class="chip">💻 Code + Testing</div>
+          <div class="chip">📎 File Intelligence</div>
+          <div class="chip">🌐 Web Agent</div>
+          <div class="chip">✅ Self-Verification</div>
+          <div class="chip">🎨 Presentations</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Suggestions -->
+  <div id="suggWrap" style="max-width:828px;margin:0 auto;width:100%;padding:0 24px 10px">
+    <div class="sugg-row">
+      <div class="sugg-pill" onclick="useSugg(this)">
+        <strong>📊 Presentation Task</strong>
+        "Prepare a complete presentation on renewable energy for my college project with research and data"
+      </div>
+      <div class="sugg-pill" onclick="useSugg(this)">
+        <strong>🔬 Research + Plan</strong>
+        "Research AI in healthcare, analyze competitors, and draft a solution architecture"
+      </div>
+      <div class="sugg-pill" onclick="useSugg(this)">
+        <strong>💻 Code Task</strong>
+        "Write and test a Python web scraper that collects product prices and saves to CSV"
+      </div>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div class="input-area">
+    <div class="input-row">
+      <button class="ib" title="Attach" onclick="toast('File attachments coming soon')">📎</button>
+      <textarea class="chat-input" id="chatInput" placeholder="Ask anything, or describe a task for ActionGPT to execute…" rows="1"
+        onkeydown="handleKey(event)" oninput="autoSize(this)"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="handleSend()" title="Send" disabled>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+    <div class="input-hint">Ask any question or describe a goal · Shift+Enter for new line</div>
+  </div>
+</main>
+
+<!-- RIGHT PANEL -->
+<aside class="rp">
+  <div class="rp-sec">
+    <div class="rp-title">Agent Pool</div>
+    <div id="agentList">
+      <div class="ag-card"><div class="ag-ico" style="background:rgba(249,115,22,.15)">🔬</div><div class="ag-info"><div class="ag-name">Research</div><div class="ag-state" id="st-research">Idle</div></div><div class="ag-ind ind-idle" id="in-research"></div></div>
+      <div class="ag-card"><div class="ag-ico" style="background:rgba(6,182,212,.15)">🌐</div><div class="ag-info"><div class="ag-name">Web Agent</div><div class="ag-state" id="st-web">Idle</div></div><div class="ag-ind ind-idle" id="in-web"></div></div>
+      <div class="ag-card"><div class="ag-ico" style="background:rgba(34,197,94,.15)">💻</div><div class="ag-info"><div class="ag-name">Coding</div><div class="ag-state" id="st-coding">Idle</div></div><div class="ag-ind ind-idle" id="in-coding"></div></div>
+      <div class="ag-card"><div class="ag-ico" style="background:rgba(251,191,36,.15)">📊</div><div class="ag-info"><div class="ag-name">Data Analysis</div><div class="ag-state" id="st-data">Idle</div></div><div class="ag-ind ind-idle" id="in-data"></div></div>
+      <div class="ag-card"><div class="ag-ico" style="background:rgba(249,115,22,.12)">📑</div><div class="ag-info"><div class="ag-name">Document</div><div class="ag-state" id="st-doc">Idle</div></div><div class="ag-ind ind-idle" id="in-doc"></div></div>
+      <div class="ag-card"><div class="ag-ico" style="background:rgba(244,114,182,.15)">🎨</div><div class="ag-info"><div class="ag-name">Presentation</div><div class="ag-state" id="st-pres">Idle</div></div><div class="ag-ind ind-idle" id="in-pres"></div></div>
+      <div class="ag-card"><div class="ag-ico" style="background:rgba(34,197,94,.1)">✅</div><div class="ag-info"><div class="ag-name">Verification</div><div class="ag-state" id="st-verify">Idle</div></div><div class="ag-ind ind-idle" id="in-verify"></div></div>
+    </div>
+  </div>
+  <div class="rp-sec">
+    <div class="rp-title">Current Task</div>
+    <div class="task-label" id="taskLabel" style="color:var(--t3)">No active task</div>
+    <div class="pbar"><div class="pfill" id="gProgress" style="width:0%"></div></div>
+  </div>
+  <div class="rp-title" style="padding:14px 16px 4px">Activity Log</div>
+  <div class="alog" id="alog"><div class="empty-log">Activity will appear here</div></div>
+</aside>
+
+<div id="aiStatus"><div class="spin" style="border-color:var(--or);border-top-color:transparent"></div>Connecting AI…</div>
+<div class="toast" id="toast"></div>
+
+<script>
+let busy = false, logClear = true, chatHistory = [], runId = 0, outSeq = 0;
+const outputs = {};
+let sampleAI = null; // will hold the `sample` capability
+
+/* ═══════════ Init: wire up the `sample` capability ═══════════ */
+const SYSTEM = `You are ActionGPT, a brilliant, action-oriented AI assistant. Answer any question directly and thoroughly: coding, math, science, writing, history, ideas, explanations, analysis — anything. Format replies with Markdown (paragraphs, lists, code blocks) when helpful. Be concise unless asked for depth. You cannot browse the web or run code during chat, but the ActionGPT platform can run multi-agent workflows to produce full deliverables (presentations, research briefs, code projects, documents) — for those, the workflow handles it automatically.`;
+
+const GEN_SYSTEM = `You are ActionGPT's execution engine. Produce the complete deliverable requested, in clean Markdown, ready to use. No preamble, no closing remarks. Where you cite statistics or facts, note they should be verified with primary sources.`;
+
+(async () => {
+  try {
+    const sample = await window.claude.use("sample");
+    if (sample) {
+      sampleAI = sample;
+      document.getElementById('aiPill').innerHTML = '<div class="dot"></div>AI Ready';
+      document.getElementById('aiStatus').classList.add('hide');
+      setSend(true);
+    } else {
+      document.getElementById('aiPill').innerHTML = '<div class="dot"></div>AI Unavailable';
+      document.getElementById('aiStatus').innerHTML = '⚠ AI unavailable';
+      setSend(true); // allow demo mode
+    }
+  } catch(e) {
+    document.getElementById('aiPill').innerHTML = '<div class="dot"></div>AI Unavailable';
+    document.getElementById('aiStatus').classList.add('hide');
+    setSend(true);
+  }
+})();
+
+async function callAI(messages, systemPrompt, maxTokens) {
+  if (!sampleAI) throw new Error("AI not connected — please refresh the page.");
+  // Build input: system message prepended as first user turn context
+  const input = messages.map(m => ({ role: m.role, content: m.content }));
+  // prepend system as a note in the first user message if no system turns
+  const sys = systemPrompt || SYSTEM;
+  // Use sample with a turns array
+  const turns = [
+    { role: "user", content: `[System instructions: ${sys}]\n\n${input[0].content}` },
+    ...input.slice(1)
+  ];
+  const result = await sampleAI(turns, { modelTier: "default" });
+  return result.text.trim();
+}
+
+/* ═══════════ Helpers ═══════════ */
+function navClick(name) {
+  if (name !== 'Chat') { addLog('ℹ️', `<strong>${name}</strong>`); toast(`${name} isn't wired up in this prototype yet`); }
+}
+function now() { return new Date().toTimeString().slice(0, 5); }
+function addLog(icon, html) {
+  const log = document.getElementById('alog');
+  if (logClear) { log.innerHTML = ''; logClear = false; }
+  const e = document.createElement('div');
+  e.className = 'log-e';
+  e.innerHTML = `<span class="log-t">${now()}</span><span class="log-m">${icon} ${html}</span>`;
+  log.appendChild(e);
+  log.scrollTop = log.scrollHeight;
+}
+function setAgent(id, state) {
+  const ind = document.getElementById(`in-${id}`), st = document.getElementById(`st-${id}`);
+  if (!ind) return;
+  ind.className = `ag-ind ${state==='work'?'ind-work':state==='done'?'ind-done':'ind-idle'}`;
+  if (st) st.textContent = state==='work'?'Working…':state==='done'?'Done':'Idle';
+}
+function setProgress(pct, label) {
+  document.getElementById('gProgress').style.width = pct + '%';
+  const tl = document.getElementById('taskLabel');
+  tl.textContent = label || 'Running…';
+  tl.style.color = 'var(--t2)';
+  tl.style.textAlign = 'left';
+}
+function resetAll() {
+  document.getElementById('gProgress').style.width = '0%';
+  const tl = document.getElementById('taskLabel');
+  tl.textContent = 'No active task'; tl.style.color = 'var(--t3)'; tl.style.textAlign = 'center';
+  ['research','web','coding','data','doc','pres','verify'].forEach(a => setAgent(a, 'idle'));
+}
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function setSend(on) { document.getElementById('sendBtn').disabled = !on; }
+function hideWelcome() {
+  const w = document.getElementById('welcomeState'); if (w) w.remove();
+  const s = document.getElementById('suggWrap'); if (s) s.style.display = 'none';
+}
+function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* Markdown renderer */
+function md(src) {
+  const blocks = [];
+  let s = esc(src).replace(/```([\w+-]*)[^\S\n]*\n?([\s\S]*?)```/g, (m, l, c) => {
+    blocks.push(`<pre><code>${c.replace(/\n$/, '')}</code></pre>`);
+    return `\u0000${blocks.length - 1}\u0000`;
+  });
+  const inline = t => t
+    .replace(/`([^`\n]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*\w])\*([^*\n]+)\*(?![*\w])/g, '$1<em>$2</em>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  let out = '', list = null, m;
+  const close = () => { if (list) { out += `</${list}>`; list = null; } };
+  for (const ln of s.split('\n')) {
+    if ((m = ln.match(/^\u0000(\d+)\u0000$/))) { close(); out += blocks[m[1]]; continue; }
+    if ((m = ln.match(/^\s*[-*•]\s+(.*)/))) { if (list!=='ul'){close();out+='<ul>';list='ul';} out+=`<li>${inline(m[1])}</li>`; continue; }
+    if ((m = ln.match(/^\s*\d+[.)]\s+(.*)/))) { if (list!=='ol'){close();out+='<ol>';list='ol';} out+=`<li>${inline(m[1])}</li>`; continue; }
+    if ((m = ln.match(/^#{1,6}\s+(.*)/))) { close(); out += `<h5>${inline(m[1])}</h5>`; continue; }
+    if (!ln.trim()) { close(); continue; }
+    close(); out += `<p>${inline(ln)}</p>`;
+  }
+  close();
+  return out.replace(/\u0000(\d+)\u0000/g, (x, i) => blocks[i]);
+}
+
+function addMsg(role, content, isHTML = false) {
+  hideWelcome();
+  const msgs = document.getElementById('chatMsgs');
+  const d = document.createElement('div');
+  d.className = `msg ${role}`;
+  const txt = isHTML ? content : esc(content).replace(/\n/g, '<br>');
+  d.innerHTML = role === 'user'
+    ? `<div class="av hu">👤</div><div class="bubble">${txt}</div>`
+    : `<div class="av ai">⚡</div><div class="bubble">${txt}</div>`;
+  msgs.appendChild(d);
+  scrollBot();
+  return d;
+}
+function addRaw(html) {
+  hideWelcome();
+  const msgs = document.getElementById('chatMsgs');
+  const wrap = document.createElement('div');
+  wrap.innerHTML = html.trim();
+  const el = wrap.firstElementChild;
+  msgs.appendChild(el);
+  scrollBot();
+  return el;
+}
+function addTyping() {
+  hideWelcome(); removeTyping();
+  const msgs = document.getElementById('chatMsgs');
+  const d = document.createElement('div');
+  d.className = 'msg ai'; d.id = 'typing';
+  d.innerHTML = `<div class="av ai">⚡</div><div class="typing-bubble"><div class="tb-dot"></div><div class="tb-dot"></div><div class="tb-dot"></div></div>`;
+  msgs.appendChild(d); scrollBot();
+}
+function removeTyping() { const e = document.getElementById('typing'); if (e) e.remove(); }
+function scrollBot() { const w = document.getElementById('chatWrap'); setTimeout(() => { w.scrollTop = w.scrollHeight; }, 60); }
+
+function planCard(steps) {
+  const cols = steps.map((s, i) => `
+    <div class="step-col">
+      <div class="sc" id="sc${i}">${s.ic}</div>
+      <div class="sl" id="sl${i}">${s.l}</div>
+    </div>${i < steps.length - 1 ? '<div style="width:8px;flex-shrink:0"></div>' : ''}`).join('');
+  return `<div class="plan-card"><div class="plan-label">⚡ Execution Plan — ${steps.length} Steps</div><div class="steps-row">${cols}</div><div class="pbar"><div class="pfill" id="pp" style="width:0%"></div></div></div>`;
+}
+function execCard(icon, name, action, color) {
+  return `<div class="exec-card">
+    <div class="ex-icon" style="background:${color}22">${icon}</div>
+    <div class="ex-info"><div class="ex-agent" style="color:${color}">${name}</div><div class="ex-action">${esc(action)}</div></div>
+    <div class="ex-st" style="color:${color}"><div class="spin"></div> Running</div>
+  </div>`;
+}
+const EXT = {python:'py',javascript:'js',typescript:'ts',html:'html',css:'css',bash:'sh',shell:'sh',sql:'sql',java:'java',cpp:'cpp',c:'c',rust:'rs',go:'go'};
+function outputCard(id, title, bodyHTML, meta) {
+  return `<div class="out-card">
+    <div class="out-head"><span class="out-badge">✦ Output</span><span class="out-title">${esc(title)}</span></div>
+    <div class="out-body" id="ob${id}">${bodyHTML}</div>
+    <div class="out-meta">${esc(meta)}</div>
+    <div class="out-actions">
+      <button class="btn btn-g" onclick="outAction('dl',${id})">⬇ Download</button>
+      <button class="btn btn-g" onclick="outAction('copy',${id})">⧉ Copy</button>
+      <button class="btn btn-g" onclick="outAction('prev',${id})">⤢ Expand</button>
+      <button class="btn btn-p" onclick="outAction('edit',${id})">✎ Revise</button>
+    </div>
+  </div>`;
+}
+function download(name, text) {
+  const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+}
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); return true; } catch(e) {}
+  try {
+    const ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); return ok;
+  } catch(e) { return false; }
+}
+async function outAction(a, id) {
+  const o = outputs[id]; if (!o) return;
+  if (a === 'dl') {
+    let text = o.text, name = o.file;
+    if (o.type === 'code') { const m = o.text.match(/```([\w+-]*)[^\S\n]*\n([\s\S]*?)```/); if (m){text=m[2];name='solution.'+(EXT[(m[1]||'').toLowerCase()]||'txt');} }
+    download(name, text); toast('Downloaded ' + name);
+  } else if (a === 'prev') {
+    const b = document.getElementById('ob' + id); if (b) b.classList.toggle('open');
+  } else if (a === 'edit') {
+    const inp = document.getElementById('chatInput'); inp.value = 'Revise the last output: '; autoSize(inp); inp.focus();
+    toast('Describe what to change, then press Enter');
+  } else if (a === 'copy') {
+    toast(await copyText(o.text) ? 'Copied to clipboard' : 'Copy failed — select text manually');
+  }
+}
+
+/* ═══════════ Task workflow ═══════════ */
+const TASKS = {
+  presentation: {
+    label:'Presentation', file:'presentation.md', title: t => `${cap(t)} — 10-Slide Presentation`,
+    prompt: q => `Create a complete 10-slide presentation for:\n\n"${q}"\n\nFor every slide: "## Slide N — Title", 3-5 concise bullets, a suggested visual/chart, and "**Speaker notes:**" with 2-3 sentences.`,
+    steps: t => [
+      ['Research','🔬','research','RESEARCH AGENT','#f97316',`Gathering key facts on ${t}…`,'Key themes identified'],
+      ['Structure','🗂','doc','DOCUMENT AGENT','#6366f1','Building 10-slide narrative arc…','Outline ready'],
+      ['Write','✍️','doc','CONTENT AGENT','#fbbf24','Writing slide copy and speaker notes…','Slides drafted'],
+      ['Design','🎨','pres','PRESENTATION AGENT','#f472b6','Planning layouts and visuals…','Layout added'],
+      ['Verify','✅','verify','VERIFICATION AGENT','#22c55e','Reviewing flow and flagging claims…','Review complete']
+    ]
+  },
+  code: {
+    label:'Code', file:'solution.txt', title: t => `${cap(t)} — Code + Guide`,
+    prompt: q => `Write complete, working code for:\n\n"${q}"\n\nProvide: full code in one fenced block with language tag, usage/run instructions, and test cases/edge cases.`,
+    steps: t => [
+      ['Understand','🧠','research','RESEARCH AGENT','#f97316','Breaking request into requirements…','Requirements clear'],
+      ['Design','🗂','doc','DOCUMENT AGENT','#6366f1',`Choosing approach for ${t}…`,'Design selected'],
+      ['Code','💻','coding','CODING AGENT','#22c55e','Writing implementation…','Code written'],
+      ['Test','🧪','coding','TEST AGENT','#fbbf24','Listing test cases and edge cases…','Tests prepared'],
+      ['Verify','✅','verify','VERIFICATION AGENT','#22c55e','Reviewing for errors and gaps…','Review complete']
+    ]
+  },
+  research: {
+    label:'Research', file:'research-brief.md', title: t => `${cap(t)} — Research Brief`,
+    prompt: q => `Write a structured research brief for:\n\n"${q}"\n\nSections: Summary, Key Findings, Landscape/Competitors (table if helpful), Risks & Gaps, Recommended Next Steps.`,
+    steps: t => [
+      ['Scope','🧠','research','RESEARCH AGENT','#f97316',`Defining scope for ${t}…`,'Scope defined'],
+      ['Gather','🌐','web','WEB AGENT','#06b6d4','Collecting background and angles…','Background collected'],
+      ['Analyze','📊','data','DATA AGENT','#fbbf24','Comparing and spotting patterns…','Patterns identified'],
+      ['Write','✍️','doc','DOCUMENT AGENT','#6366f1','Drafting the brief…','Brief drafted'],
+      ['Verify','✅','verify','VERIFICATION AGENT','#22c55e','Flagging claims for source check…','Review complete']
+    ]
+  },
+  report: {
+    label:'Document', file:'document.md', title: t => `${cap(t)} — Document`,
+    prompt: q => `Write a complete, well-structured document for:\n\n"${q}"\n\nUse clear headings, concise paragraphs and bullet lists. Make it ready to use.`,
+    steps: t => [
+      ['Understand','🧠','research','RESEARCH AGENT','#f97316','Identifying purpose and audience…','Purpose clarified'],
+      ['Outline','🗂','doc','DOCUMENT AGENT','#6366f1',`Outlining sections for ${t}…`,'Outline ready'],
+      ['Write','✍️','doc','CONTENT AGENT','#fbbf24','Writing the full draft…','Draft written'],
+      ['Polish','🎨','pres','FORMAT AGENT','#f472b6','Tightening tone and formatting…','Polished'],
+      ['Verify','✅','verify','VERIFICATION AGENT','#22c55e','Checking consistency…','Review complete']
+    ]
+  }
+};
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+
+function classify(t) {
+  const l = t.toLowerCase();
+  if (t.length < 28) return null;
+  if (/^(what|why|how|who|when|where|which|is|are|does|do|explain|tell me|define|can you tell|could you)\b/.test(l)) return null;
+  if (!/\b(prepare|create|build|make|generate|write|draft|design|develop|research|analy[sz]e|plan)\b/.test(l)) return null;
+  if (/\b(presentation|slides?|slide deck|ppt|deck)\b/.test(l)) return 'presentation';
+  if (/\b(python|javascript|script|scraper|code|program|function|api|app|bot|algorithm)\b/.test(l) && /\b(write|build|create|develop|make|generate)\b/.test(l)) return 'code';
+  if (/\b(research|analy[sz]e|competitors?|market|compare|landscape)\b/.test(l)) return 'research';
+  if (/\b(report|document|essay|business plan|proposal|plan|summary|article)\b/.test(l)) return 'report';
+  return null;
+}
+function topicOf(q) {
+  const m = q.match(/\b(?:on|about|regarding|for)\s+(.+?)(?=\s+(?:for|with|including|that|which|and)\b|[,.;:!?]|$)/i);
+  let t = m ? m[1] : q.replace(/^(please\s+)?(can you\s+)?(prepare|create|build|make|generate|write|draft|design|develop|research|analy[sz]e|plan)(\s+and\s+\w+)?\s+(me\s+)?/i,'').split(/\s+(?:that|which|to)\s+/i)[0];
+  t = t.replace(/^(a|an|the|my|complete)\s+/i,'').trim();
+  if (t.length > 48) t = t.slice(0, 45).trim() + '…';
+  return t || 'your topic';
+}
+
+async function runTask(query, type) {
+  if (busy) return;
+  busy = true; setSend(false);
+  const rid = ++runId, alive = () => rid === runId;
+  const T = TASKS[type], topic = topicOf(query), steps = T.steps(topic);
+  resetAll();
+  addMsg('user', query);
+  addLog('💬', `Task: <strong>${esc(query.slice(0, 52))}…</strong>`);
+  await sleep(400); if (!alive()) return;
+
+  addTyping();
+  addLog('🧠', 'Orchestrator <strong>analyzing task</strong>…');
+  setProgress(4, '🧠 Understanding request…');
+  await sleep(1000); if (!alive()) return;
+  removeTyping();
+
+  addMsg('ai', `Analyzing your goal. This is a <strong>${steps.length}-step multi-agent workflow</strong> (${T.label}). Execution plan — starting now:`, true);
+  addRaw(planCard(steps.map(s => ({ic: s[1], l: s[0]}))));
+
+  // Fire real generation in parallel
+  let gen = sampleAI
+    ? sampleAI([{role:'user', content:`[System: ${GEN_SYSTEM}]\n\n${T.prompt(query)}`}], {modelTier:'complex'}).then(r=>({ok:true,t:r.text}),e=>({ok:false,e}))
+    : Promise.resolve({ok:false, e:{message:'AI not connected'}});
+
+  addLog('🚀', 'Pipeline <strong>started</strong>');
+  for (let i = 0; i < steps.length; i++) {
+    const [label, icon, ag, name, color, action, result] = steps[i];
+    const pct = Math.round(((i + 1) / steps.length) * 92);
+    const sc = document.getElementById(`sc${i}`), sl = document.getElementById(`sl${i}`);
+    if (sc) sc.className = 'sc active';
+    if (sl) sl.className = 'sl active';
+    const pp = document.getElementById('pp'); if (pp) pp.style.width = `${Math.round((i/steps.length)*100)}%`;
+    setAgent(ag, 'work');
+    setProgress(pct - 10, `${icon} ${name}: ${action.slice(0, 40)}…`);
+    addLog(icon, `${name} <strong>working</strong>`);
+    const card = addRaw(execCard(icon, name, action, color));
+    await sleep(1500); if (!alive()) return;
+    if (sc) { sc.className = 'sc done'; sc.textContent = '✓'; }
+    if (sl) sl.className = 'sl done';
+    setAgent(ag, 'done');
+    const st = card.querySelector('.ex-st');
+    if (st) st.innerHTML = '<span style="color:var(--green)">✓ Done</span>';
+    addLog('✅', result);
+    setProgress(pct, `✓ Step ${i+1} complete`);
+  }
+
+  setProgress(94, '⏳ Finalising output…');
+  const r = await gen; if (!alive()) return;
+  let text = '', isLive = false;
+  if (r.ok) { text = r.t; isLive = true; }
+  else {
+    addLog('⚠️', 'Generation <strong>failed</strong>');
+    addMsg('ai', `⚠️ Generation failed: ${esc(r.e && r.e.message || String(r.e))}`, true);
+    text = `# ${cap(topic)}\n\n*(Generation failed — please try again.)*`;
+  }
+
+  const pp = document.getElementById('pp'); if (pp) pp.style.width = '100%';
+  await sleep(300); if (!alive()) return;
+  const id = ++outSeq;
+  outputs[id] = {text, type, file: T.file};
+  addRaw(outputCard(id, T.title(topic), md(text), isLive ? '✓ Generated by ActionGPT · review facts before using' : 'Generation error.'));
+  addMsg('ai', '✅ <strong>Done!</strong> Your deliverable is ready — download, copy, or tell me what to change.', true);
+  addLog('🎉', 'Task <strong>completed</strong>');
+  chatHistory.push({role:'user', content:query});
+  chatHistory.push({role:'assistant', content:isLive?text.slice(0,4000):'(failed)'});
+  setProgress(100, '✓ Task complete');
+  document.getElementById('taskLabel').style.color = 'var(--green)';
+  busy = false; setSend(true);
+}
+
+/* ═══════════ General chat ═══════════ */
+async function handleSend() {
+  const inp = document.getElementById('chatInput');
+  const txt = inp.value.trim();
+  if (!txt || busy) return;
+  inp.value = ''; autoSize(inp);
+
+  const type = classify(txt);
+  if (type) { runTask(txt, type); return; }
+
+  busy = true; setSend(false);
+  const rid = ++runId;
+  addMsg('user', txt);
+  addLog('💬', `Message: <strong>${esc(txt.slice(0, 45))}</strong>`);
+  chatHistory.push({role:'user', content:txt});
+  addTyping();
+  try {
+    if (!sampleAI) throw new Error('AI not connected — please refresh.');
+    // Build turns for context
+    const recent = chatHistory.slice(-20);
+    while (recent.length && recent[0].role !== 'user') recent.shift();
+    // Prepend system to first message
+    const turns = recent.map((m, i) => ({
+      role: m.role,
+      content: i === 0 ? `[System: ${SYSTEM}]\n\n${m.content}` : m.content
+    }));
+    const reply = await sampleAI(turns, {modelTier: 'default'});
+    if (rid !== runId) return;
+    removeTyping();
+    chatHistory.push({role:'assistant', content:reply.text});
+    addMsg('ai', md(reply.text), true);
+    addLog('🤖', 'ActionGPT <strong>responded</strong>');
+  } catch(e) {
+    if (rid !== runId) return;
+    removeTyping();
+    chatHistory.pop();
+    addMsg('ai', '⚠️ ' + esc(e && e.message || String(e)), true);
+    addLog('⚠️', 'Error');
+  }
+  busy = false; setSend(true);
+  inp.focus();
+}
+
+function useSugg(el) {
+  const strong = el.querySelector('strong');
+  const text = el.textContent.replace(strong.textContent,'').trim().replace(/^[""]|[""]$/g,'');
+  document.getElementById('chatInput').value = text;
+  handleSend();
+}
+function runDemo() {
+  if (busy) return;
+  runTask('Prepare a complete presentation about renewable energy for my college project — include recent data, charts, and speaker notes.', 'presentation');
+}
+function clearChat() {
+  runId++;
+  document.getElementById('chatMsgs').innerHTML = `
+    <div class="welcome" id="welcomeState">
+      <div class="wlogo">⚡</div>
+      <h2>Don't just ask AI.<br>Let AI get it done.</h2>
+      <p>ActionGPT understands your goal, creates a plan, deploys specialized agents, and delivers the finished result.</p>
+      <div class="chips">
+        <div class="chip">🔬 Deep Research</div><div class="chip">📊 Data Analysis</div>
+        <div class="chip">📑 Document Generation</div><div class="chip">💻 Code + Testing</div>
+        <div class="chip">📎 File Intelligence</div><div class="chip">🌐 Web Agent</div>
+        <div class="chip">✅ Self-Verification</div><div class="chip">🎨 Presentations</div>
+      </div>
+    </div>`;
+  document.getElementById('suggWrap').style.display = 'block';
+  chatHistory = [];
+  resetAll();
+  logClear = true;
+  document.getElementById('alog').innerHTML = '<div class="empty-log">Activity will appear here</div>';
+  busy = false; setSend(true);
+}
+let toastT;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2400);
+}
+function handleKey(e) { if (e.key==='Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); handleSend(); } }
+function autoSize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 110) + 'px'; }
+</script>
+</body>
+</html>
